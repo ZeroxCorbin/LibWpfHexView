@@ -5,6 +5,7 @@
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Windows;
+    using System.Windows.Controls;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml.
@@ -24,10 +25,12 @@
             var rand = new Random();
 
             // 10 MB of random data
-            var bytes = new byte[10 * 1024 * 1024];
+            var bytes = new byte[0x800];
             rand.NextBytes(bytes);
 
             Reader = new BinaryReader(new MemoryStream(bytes));
+
+            hexViewer.Address = 0x400000;
         }
 
         /// <inheritdoc/>

@@ -372,7 +372,16 @@
         {
             get => (long)GetValue(OffsetProperty);
 
-            set => SetValue(OffsetProperty, value);
+            set
+            {
+                var clampedVal = value;
+                if (clampedVal > (DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows)) + MaxVisibleColumns)
+                {
+                    clampedVal = DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows) + MaxVisibleColumns;
+                }
+
+                SetValue(OffsetProperty, clampedVal);
+            }
         }
 
         /// <summary>
@@ -2379,7 +2388,8 @@
                 long r = DataSource.BaseStream.Length % BytesPerRow;
 
                 // Each scroll value represents a single drawn row
-                verticalScrollBar.Maximum = q + (r > 0 ? 1 : 0);
+                verticalScrollBar.Maximum = (q + (r > 0 ? 1 : 0)) - MaxVisibleRows;
+                verticalScrollBar.ViewportSize = MaxVisibleRows;
 
                 // Adjust the scroll value based on the current offset
                 verticalScrollBar.Value = Offset / BytesPerRow;
