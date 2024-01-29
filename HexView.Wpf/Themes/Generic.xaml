@@ -417,7 +417,7 @@
                             </Canvas.ContextMenu>
                         </Canvas>
 
-                        <ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1"/>
+                        <!--<ScrollBar Name="PART_VerticalScrollBar" Grid.Column="1"/>-->
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

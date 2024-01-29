@@ -18,7 +18,7 @@
     /// Represents a control designed to display a classical hexadecimal viewer.
     /// </summary>
     [TemplatePart(Name = CanvasName, Type = typeof(Canvas))]
-    [TemplatePart(Name = VerticalScrollBarName, Type = typeof(ScrollBar))]
+    //[TemplatePart(Name = VerticalScrollBarName, Type = typeof(ScrollBar))]
     public class HexViewer : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -196,7 +196,7 @@
                 new FrameworkPropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
 
         private const string CanvasName = "PART_Canvas";
-        private const string VerticalScrollBarName = "PART_VerticalScrollBar";
+        //private const string VerticalScrollBarName = "PART_VerticalScrollBar";
 
         private const int MaxColumns = 128;
         private const int MaxRows = 128;
@@ -214,7 +214,7 @@
 
         private double lastVerticalScrollValue = 0;
 
-        private ScrollBar verticalScrollBar;
+        //private ScrollBar verticalScrollBar;
 
         /// <summary>
         /// Initializes static members of the <see cref="HexViewer"/> class.
@@ -374,7 +374,10 @@
 
             set
             {
+                
                 var clampedVal = value;
+
+                if (DataSource != null)
                 if (clampedVal > (DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows)) + MaxVisibleColumns)
                 {
                     clampedVal = DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows) + MaxVisibleColumns;
@@ -561,26 +564,26 @@
                 throw new InvalidOperationException($"Could not find {CanvasName} template child.");
             }
 
-            if (verticalScrollBar != null)
-            {
-                verticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
-            }
+            //if (verticalScrollBar != null)
+            //{
+            //    verticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
+            //}
 
-            verticalScrollBar = GetTemplateChild(VerticalScrollBarName) as ScrollBar;
+            //verticalScrollBar = GetTemplateChild(VerticalScrollBarName) as ScrollBar;
 
-            if (verticalScrollBar != null)
-            {
-                verticalScrollBar.Scroll += OnVerticalScrollBarScroll;
-                verticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
+            //if (verticalScrollBar != null)
+            //{
+            //    verticalScrollBar.Scroll += OnVerticalScrollBarScroll;
+            //    verticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
 
-                verticalScrollBar.Minimum = 0;
-                verticalScrollBar.SmallChange = 1;
-                verticalScrollBar.LargeChange = MaxVisibleRows;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Could not find {VerticalScrollBarName} template child.");
-            }
+            //    verticalScrollBar.Minimum = 0;
+            //    verticalScrollBar.SmallChange = 1;
+            //    verticalScrollBar.LargeChange = MaxVisibleRows;
+            //}
+            //else
+            //{
+            //    throw new InvalidOperationException($"Could not find {VerticalScrollBarName} template child.");
+            //}
         }
 
         /// <summary>
@@ -931,23 +934,23 @@
         }
 
         /// <inheritdoc/>
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
-        {
-            base.OnMouseWheel(e);
+        //protected override void OnMouseWheel(MouseWheelEventArgs e)
+        //{
+        //    base.OnMouseWheel(e);
 
-            if (e.Delta < 0)
-            {
-                verticalScrollBar.Value += ScrollWheelScrollRows;
+        //    if (e.Delta < 0)
+        //    {
+        //        verticalScrollBar.Value += ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallIncrement, verticalScrollBar.Value));
-            }
-            else
-            {
-                verticalScrollBar.Value -= ScrollWheelScrollRows;
+        //        OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallIncrement, verticalScrollBar.Value));
+        //    }
+        //    else
+        //    {
+        //        verticalScrollBar.Value -= ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallDecrement, verticalScrollBar.Value));
-            }
-        }
+        //        OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallDecrement, verticalScrollBar.Value));
+        //    }
+        //}
 
         /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
@@ -1742,26 +1745,26 @@
             e.CanExecute = IsSelectionActive;
         }
 
-        private void OnVerticalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            lastVerticalScrollValue = e.OldValue;
-        }
+        //private void OnVerticalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //{
+        //    lastVerticalScrollValue = e.OldValue;
+        //}
 
-        private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
-        {
-            long valueDelta = (long)(e.NewValue - lastVerticalScrollValue);
+        //private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
+        //{
+        //    long valueDelta = (long)(e.NewValue - lastVerticalScrollValue);
 
-            long newOffset = Offset + (valueDelta * BytesPerRow);
+        //    long newOffset = Offset + (valueDelta * BytesPerRow);
 
-            if (newOffset < 0)
-            {
-                newOffset = 0;
-            }
+        //    if (newOffset < 0)
+        //    {
+        //        newOffset = 0;
+        //    }
 
-            Offset = newOffset;
+        //    Offset = newOffset;
 
-            InvalidateVisual();
-        }
+        //    InvalidateVisual();
+        //}
 
         private string GetFormattedAddressText(ulong address)
         {
@@ -2321,7 +2324,7 @@
         private void UpdateState()
         {
             UpdateMaxVisibleRowsAndColumns();
-            UpdateScrollBar();
+           // UpdateScrollBar();
         }
 
         private void UpdateMaxVisibleRowsAndColumns()
@@ -2377,35 +2380,35 @@
             MaxVisibleColumns = maxVisibleColumns;
 
             // Maximum visible rows has now changed and so we must update the maximum amount we should scroll by
-            verticalScrollBar.LargeChange = maxVisibleRows;
+            //verticalScrollBar.LargeChange = maxVisibleRows;
         }
 
-        private void UpdateScrollBar()
-        {
-            if ((ShowAddress || ShowData || ShowText) && DataSource != null && Columns > 0 && MaxVisibleRows > 0)
-            {
-                long q = DataSource.BaseStream.Length / BytesPerRow;
-                long r = DataSource.BaseStream.Length % BytesPerRow;
+        //private void UpdateScrollBar()
+        //{
+        //    if ((ShowAddress || ShowData || ShowText) && DataSource != null && Columns > 0 && MaxVisibleRows > 0)
+        //    {
+        //        long q = DataSource.BaseStream.Length / BytesPerRow;
+        //        long r = DataSource.BaseStream.Length % BytesPerRow;
 
-                // Each scroll value represents a single drawn row
-                verticalScrollBar.Maximum = (q + (r > 0 ? 1 : 0)) - MaxVisibleRows;
-                verticalScrollBar.ViewportSize = MaxVisibleRows;
+        //        // Each scroll value represents a single drawn row
+        //        verticalScrollBar.Maximum = (q + (r > 0 ? 1 : 0)) - MaxVisibleRows;
+        //        verticalScrollBar.ViewportSize = MaxVisibleRows;
 
-                // Adjust the scroll value based on the current offset
-                verticalScrollBar.Value = Offset / BytesPerRow;
+        //        // Adjust the scroll value based on the current offset
+        //        verticalScrollBar.Value = Offset / BytesPerRow;
 
-                // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
-                // and the current offset is less than the number of bytes we can display per row
-                if (verticalScrollBar.Value == 0 && Offset > 0)
-                {
-                    ++verticalScrollBar.Value;
-                }
-            }
-            else
-            {
-                verticalScrollBar.Maximum = 0;
-            }
-        }
+        //        // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
+        //        // and the current offset is less than the number of bytes we can display per row
+        //        if (verticalScrollBar.Value == 0 && Offset > 0)
+        //        {
+        //            ++verticalScrollBar.Value;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        verticalScrollBar.Maximum = 0;
+        //    }
+        //}
 
         private long ConvertPositionToOffset(Point position)
         {
