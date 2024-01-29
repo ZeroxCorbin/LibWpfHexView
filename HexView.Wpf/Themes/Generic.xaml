@@ -31,7 +31,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Canvas Name="PART_Canvas" Background="{TemplateBinding Background}" Margin="5">
+                        <Canvas Name="PART_Canvas" Background="{TemplateBinding Background}" Margin="1">
                             <Canvas.ContextMenu>
                                 <ContextMenu>
                                     <ContextMenu.Resources>
