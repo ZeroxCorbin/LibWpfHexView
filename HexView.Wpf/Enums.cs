@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HexView.Wpf
+﻿namespace HexView.Wpf
 {
     /// <summary>
     /// Enumerates how the data (bytes read from the buffer) is to be interpreted when displayed.

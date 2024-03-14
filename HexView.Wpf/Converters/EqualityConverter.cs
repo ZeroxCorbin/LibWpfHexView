@@ -34,12 +34,9 @@
         /// </returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != typeof(bool))
-            {
-                throw new ArgumentException("Argument targetType must be of type 'Boolean'", nameof(targetType));
-            }
-
-            return value.Equals(parameter);
+            return targetType != typeof(bool)
+                ? throw new ArgumentException("Argument targetType must be of type 'Boolean'", nameof(targetType))
+                : (object)value.Equals(parameter);
         }
 
         /// <summary>
@@ -65,9 +62,6 @@
         /// <returns>
         /// <c>true</c> if <paramref name="value"/> is equal to <paramref name="parameter"/>; <c>false</c> otherwise.
         /// </returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return parameter;
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => parameter;
     }
 }

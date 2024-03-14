@@ -8,17 +8,16 @@
     using System.Text;
     using System.Windows;
     using System.Windows.Controls;
-    using System.Windows.Controls.Primitives;
     using System.Windows.Input;
     using System.Windows.Media;
-
     using BinaryTools.Elf.Io;
 
     /// <summary>
     /// Represents a control designed to display a classical hexadecimal viewer.
     /// </summary>
     [TemplatePart(Name = CanvasName, Type = typeof(Canvas))]
-    //[TemplatePart(Name = VerticalScrollBarName, Type = typeof(ScrollBar))]
+
+    // [TemplatePart(Name = VerticalScrollBarName, Type = typeof(ScrollBar))]
     public class HexViewer : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -196,8 +195,8 @@
                 new FrameworkPropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
 
         private const string CanvasName = "PART_Canvas";
-        //private const string VerticalScrollBarName = "PART_VerticalScrollBar";
 
+        // private const string VerticalScrollBarName = "PART_VerticalScrollBar";
         private const int MaxColumns = 128;
         private const int MaxRows = 128;
 
@@ -214,15 +213,12 @@
 
         private double lastVerticalScrollValue = 0;
 
-        //private ScrollBar verticalScrollBar;
+        // private ScrollBar verticalScrollBar;
 
         /// <summary>
         /// Initializes static members of the <see cref="HexViewer"/> class.
         /// </summary>
-        static HexViewer()
-        {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(HexViewer), new FrameworkPropertyMetadata(typeof(HexViewer)));
-        }
+        static HexViewer() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HexViewer), new FrameworkPropertyMetadata(typeof(HexViewer)));
 
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -374,13 +370,14 @@
 
             set
             {
-                
                 var clampedVal = value;
 
                 if (DataSource != null)
-                if (clampedVal > (DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows)) + MaxVisibleColumns)
                 {
-                    clampedVal = DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows) + MaxVisibleColumns;
+                    if (clampedVal > DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows) + MaxVisibleColumns)
+                    {
+                        clampedVal = DataSource.BaseStream.Length - (MaxVisibleColumns * MaxVisibleRows) + MaxVisibleColumns;
+                    }
                 }
 
                 SetValue(OffsetProperty, clampedVal);
@@ -420,20 +417,7 @@
         /// <summary>
         /// Gets the number of bytes selected.
         /// </summary>
-        public long SelectionLength
-        {
-            get
-            {
-                if (SelectionStart <= SelectionEnd)
-                {
-                    return SelectionEnd - SelectionStart;
-                }
-                else
-                {
-                    return SelectionStart - SelectionEnd + BytesPerColumn;
-                }
-            }
-        }
+        public long SelectionLength => SelectionStart <= SelectionEnd ? SelectionEnd - SelectionStart : SelectionStart - SelectionEnd + BytesPerColumn;
 
         /// <summary>
         /// Gets the offset from <see cref="DataSource"/> of where the user selection has started.
@@ -524,9 +508,9 @@
         {
             if (IsSelectionActive)
             {
-                StringBuilder builder = new StringBuilder();
+                var builder = new StringBuilder();
 
-                long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
+                var savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
 
                 DataSource.BaseStream.Position = Math.Min(SelectionStart, SelectionEnd);
 
@@ -534,7 +518,7 @@
                 {
                     var formattedData = ReadFormattedData();
 
-                    builder.Append(formattedData);
+                    _ = builder.Append(formattedData);
                 }
 
                 DataSource.BaseStream.Position = savedDataSourcePositionBeforeReadingData;
@@ -552,38 +536,33 @@
             // see https://social.msdn.microsoft.com/Forums/windows/en-US/5b582b96-ade5-4354-99cf-3fe64cc6b53b/determining-if-font-is-monospaced?forum=winforms
             canvas = GetTemplateChild(CanvasName) as Canvas;
 
-            if (canvas != null)
-            {
-                CommandBindings.Add(new CommandBinding(
+            _ = canvas != null
+                ? CommandBindings.Add(new CommandBinding(
                     CopyCommand,
                     CopyExecuted,
-                    CopyCanExecute));
-            }
-            else
-            {
-                throw new InvalidOperationException($"Could not find {CanvasName} template child.");
-            }
+                    CopyCanExecute))
+                : throw new InvalidOperationException($"Could not find {CanvasName} template child.");
 
-            //if (verticalScrollBar != null)
-            //{
+            // if (verticalScrollBar != null)
+            // {
             //    verticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
-            //}
+            // }
 
-            //verticalScrollBar = GetTemplateChild(VerticalScrollBarName) as ScrollBar;
+            // verticalScrollBar = GetTemplateChild(VerticalScrollBarName) as ScrollBar;
 
-            //if (verticalScrollBar != null)
-            //{
+            // if (verticalScrollBar != null)
+            // {
             //    verticalScrollBar.Scroll += OnVerticalScrollBarScroll;
             //    verticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
 
-            //    verticalScrollBar.Minimum = 0;
+            // verticalScrollBar.Minimum = 0;
             //    verticalScrollBar.SmallChange = 1;
             //    verticalScrollBar.LargeChange = MaxVisibleRows;
-            //}
-            //else
-            //{
+            // }
+            // else
+            // {
             //    throw new InvalidOperationException($"Could not find {VerticalScrollBarName} template child.");
-            //}
+            // }
         }
 
         /// <summary>
@@ -620,217 +599,217 @@
                 switch (e.Key)
                 {
                     case Key.A:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         {
-                            SelectionStart = 0;
-                            SelectionEnd = DataSource.BaseStream.Length;
+                            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                            {
+                                SelectionStart = 0;
+                                SelectionEnd = DataSource.BaseStream.Length;
 
-                            e.Handled = true;
+                                e.Handled = true;
+                            }
+
+                            break;
                         }
-
-                        break;
-                    }
 
                     case Key.C:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         {
-                            e.Handled = true;
-                        }
+                            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                            {
+                                e.Handled = true;
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
 
                     case Key.Down:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionEnd += BytesPerRow;
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionEnd += BytesPerRow;
+                            }
+                            else
+                            {
+                                SelectionStart += BytesPerRow;
+                                SelectionEnd = SelectionStart + BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+
+                            e.Handled = true;
+
+                            break;
                         }
-                        else
-                        {
-                            SelectionStart += BytesPerRow;
-                            SelectionEnd = SelectionStart + BytesPerColumn;
-                        }
-
-                        ScrollToOffset(SelectionEnd - BytesPerColumn);
-
-                        e.Handled = true;
-
-                        break;
-                    }
 
                     case Key.End:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         {
-                            SelectionEnd = DataSource.BaseStream.Length;
-
-                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                             {
-                                SelectionStart = SelectionEnd - BytesPerColumn;
+                                SelectionEnd = DataSource.BaseStream.Length;
+
+                                if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                                {
+                                    SelectionStart = SelectionEnd - BytesPerColumn;
+                                }
+
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            }
+                            else
+                            {
+                                SelectionEnd += (Offset - SelectionEnd).Mod(BytesPerRow);
+
+                                if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                                {
+                                    SelectionStart = SelectionEnd - BytesPerColumn;
+                                }
+
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            e.Handled = true;
+
+                            break;
                         }
-                        else
-                        {
-                            SelectionEnd += (Offset - SelectionEnd).Mod(BytesPerRow);
-
-                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
-                            {
-                                SelectionStart = SelectionEnd - BytesPerColumn;
-                            }
-
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
-                        }
-
-                        e.Handled = true;
-
-                        break;
-                    }
 
                     case Key.Home:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                         {
-                            SelectionEnd = 0;
-
-                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                             {
-                                SelectionStart = SelectionEnd;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionEnd = 0;
+
+                                if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                                {
+                                    SelectionStart = SelectionEnd;
+                                    SelectionEnd = SelectionStart + BytesPerColumn;
+                                }
+
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            }
+                            else
+                            {
+                                // TODO: Because of the way we represent selection there is no way to distinguish at the
+                                // moment whether the selection ends at the start of the current line or the end of the
+                                // previous line. As such, when the Shift+End hotkey is used twice consecutively a whole
+                                // new line above the current selection will be selected. This is undesirable behavior
+                                // that deviates from the canonical semantics of Shift+End.
+                                SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(BytesPerRow) + 1;
+
+                                if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                                {
+                                    SelectionStart = SelectionEnd;
+                                    SelectionEnd = SelectionStart + BytesPerColumn;
+                                }
+
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            e.Handled = true;
+
+                            break;
                         }
-                        else
-                        {
-                            // TODO: Because of the way we represent selection there is no way to distinguish at the
-                            // moment whether the selection ends at the start of the current line or the end of the
-                            // previous line. As such, when the Shift+End hotkey is used twice consecutively a whole
-                            // new line above the current selection will be selected. This is undesirable behavior
-                            // that deviates from the canonical semantics of Shift+End.
-                            SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(BytesPerRow) + 1;
-
-                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
-                            {
-                                SelectionStart = SelectionEnd;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
-                            }
-
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
-                        }
-
-                        e.Handled = true;
-
-                        break;
-                    }
 
                     case Key.Left:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionEnd -= BytesPerColumn;
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionEnd -= BytesPerColumn;
+                            }
+                            else
+                            {
+                                SelectionStart -= BytesPerColumn;
+                                SelectionEnd = SelectionStart + BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+
+                            e.Handled = true;
+
+                            break;
                         }
-                        else
-                        {
-                            SelectionStart -= BytesPerColumn;
-                            SelectionEnd = SelectionStart + BytesPerColumn;
-                        }
-
-                        ScrollToOffset(SelectionEnd - BytesPerColumn);
-
-                        e.Handled = true;
-
-                        break;
-                    }
 
                     case Key.PageDown:
-                    {
-                        bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
-                        SelectionEnd += BytesPerRow * MaxVisibleRows;
-
-                        if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionStart = SelectionEnd - BytesPerColumn;
-                        }
+                            var isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
 
-                        if (isOffsetVisibleBeforeSelectionChange)
-                        {
-                            ScrollToOffset(Offset + (BytesPerRow * MaxVisibleRows * 2) - BytesPerColumn);
-                        }
-                        else
-                        {
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
-                        }
+                            SelectionEnd += BytesPerRow * MaxVisibleRows;
 
-                        e.Handled = true;
-                        break;
-                    }
+                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionStart = SelectionEnd - BytesPerColumn;
+                            }
+
+                            if (isOffsetVisibleBeforeSelectionChange)
+                            {
+                                ScrollToOffset(Offset + (BytesPerRow * MaxVisibleRows * 2) - BytesPerColumn);
+                            }
+                            else
+                            {
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            }
+
+                            e.Handled = true;
+                            break;
+                        }
 
                     case Key.PageUp:
-                    {
-                        bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
-                        SelectionEnd -= BytesPerRow * MaxVisibleRows;
-
-                        if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionStart = SelectionEnd - BytesPerColumn;
-                            SelectionEnd = SelectionStart + BytesPerColumn;
-                        }
+                            var isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
 
-                        if (isOffsetVisibleBeforeSelectionChange)
-                        {
-                            ScrollToOffset(Offset - (BytesPerRow * MaxVisibleRows));
-                        }
-                        else
-                        {
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
-                        }
+                            SelectionEnd -= BytesPerRow * MaxVisibleRows;
 
-                        e.Handled = true;
-                        break;
-                    }
+                            if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionStart = SelectionEnd - BytesPerColumn;
+                                SelectionEnd = SelectionStart + BytesPerColumn;
+                            }
+
+                            if (isOffsetVisibleBeforeSelectionChange)
+                            {
+                                ScrollToOffset(Offset - (BytesPerRow * MaxVisibleRows));
+                            }
+                            else
+                            {
+                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            }
+
+                            e.Handled = true;
+                            break;
+                        }
 
                     case Key.Right:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionEnd += BytesPerColumn;
-                        }
-                        else
-                        {
-                            SelectionStart += BytesPerColumn;
-                            SelectionEnd = SelectionStart + BytesPerColumn;
-                        }
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionEnd += BytesPerColumn;
+                            }
+                            else
+                            {
+                                SelectionStart += BytesPerColumn;
+                                SelectionEnd = SelectionStart + BytesPerColumn;
+                            }
 
-                        ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - BytesPerColumn);
 
-                        e.Handled = true;
-                        break;
-                    }
+                            e.Handled = true;
+                            break;
+                        }
 
                     case Key.Up:
-                    {
-                        if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                         {
-                            SelectionEnd -= BytesPerRow;
-                        }
-                        else
-                        {
-                            SelectionStart -= BytesPerRow;
-                            SelectionEnd = SelectionStart + BytesPerColumn;
-                        }
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                SelectionEnd -= BytesPerRow;
+                            }
+                            else
+                            {
+                                SelectionStart -= BytesPerRow;
+                                SelectionEnd = SelectionStart + BytesPerColumn;
+                            }
 
-                        ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - BytesPerColumn);
 
-                        e.Handled = true;
-                        break;
-                    }
+                            e.Handled = true;
+                            break;
+                        }
                 }
             }
         }
@@ -842,9 +821,9 @@
 
             if (e.ChangedButton == MouseButton.Left)
             {
-                Point position = e.GetPosition(canvas);
+                var position = e.GetPosition(canvas);
 
-                Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
 
                 if (position.X < addressVerticalLinePoint0.X)
                 {
@@ -864,11 +843,11 @@
 
             if (highlightState == SelectionArea.None && CaptureMouse())
             {
-                Point position = e.GetPosition(canvas);
+                var position = e.GetPosition(canvas);
 
-                Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                Point textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+                var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                var textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
 
                 if (position.X < addressVerticalLinePoint0.X)
                 {
@@ -914,43 +893,36 @@
             {
                 case SelectionArea.Data:
                 case SelectionArea.Text:
-                {
-                    Point position = e.GetPosition(canvas);
-
-                    var currentMouseOverOffset = ConvertPositionToOffset(position);
-
-                    if (currentMouseOverOffset >= SelectionStart)
                     {
-                        SelectionEnd = currentMouseOverOffset + BytesPerColumn;
-                    }
-                    else
-                    {
-                        SelectionEnd = currentMouseOverOffset;
-                    }
+                        var position = e.GetPosition(canvas);
 
-                    break;
-                }
+                        var currentMouseOverOffset = ConvertPositionToOffset(position);
+
+                        SelectionEnd = currentMouseOverOffset >= SelectionStart ? currentMouseOverOffset + BytesPerColumn : currentMouseOverOffset;
+
+                        break;
+                    }
             }
         }
 
         /// <inheritdoc/>
-        //protected override void OnMouseWheel(MouseWheelEventArgs e)
-        //{
+        // protected override void OnMouseWheel(MouseWheelEventArgs e)
+        // {
         //    base.OnMouseWheel(e);
 
-        //    if (e.Delta < 0)
+        // if (e.Delta < 0)
         //    {
         //        verticalScrollBar.Value += ScrollWheelScrollRows;
 
-        //        OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallIncrement, verticalScrollBar.Value));
+        // OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallIncrement, verticalScrollBar.Value));
         //    }
         //    else
         //    {
         //        verticalScrollBar.Value -= ScrollWheelScrollRows;
 
-        //        OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallDecrement, verticalScrollBar.Value));
+        // OnVerticalScrollBarScroll(verticalScrollBar, new ScrollEventArgs(ScrollEventType.SmallDecrement, verticalScrollBar.Value));
         //    }
-        //}
+        // }
 
         /// <inheritdoc/>
         protected override void OnRender(DrawingContext drawingContext)
@@ -963,12 +935,12 @@
 
             if (DataSource != null)
             {
-                long savedDataSourcePosition = DataSource.BaseStream.Position;
+                var savedDataSourcePosition = DataSource.BaseStream.Position;
 
                 // Adjust the data source position based on the current offset
                 DataSource.BaseStream.Position = Offset;
 
-                DrawingVisual drawingVisual = new DrawingVisual();
+                var drawingVisual = new DrawingVisual();
 
                 using (drawingContext = drawingVisual.RenderOpen())
                 {
@@ -982,10 +954,10 @@
 
                     var pen = new Pen(Foreground, 1.0);
 
-                    double halfPenThickness = pen.Thickness / 2;
+                    var halfPenThickness = pen.Thickness / 2;
 
                     // Create guidelines to make sure our coordinate snap to device pixels
-                    GuidelineSet guidelines = new GuidelineSet();
+                    var guidelines = new GuidelineSet();
 
                     drawingContext.PushGuidelineSet(guidelines);
 
@@ -1016,8 +988,8 @@
 
                         if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                         {
-                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
-                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
+                            var selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
+                            var selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
 
                             if (((SelectedOffset + SelectionLength - Offset) / BytesPerColumn) % Columns == 0)
                             {
@@ -1048,8 +1020,8 @@
 
                         if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                         {
-                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
-                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
+                            var selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
+                            var selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
 
                             if (((SelectedOffset + SelectionLength - Offset) / BytesPerColumn) % Columns == 0)
                             {
@@ -1064,7 +1036,7 @@
 
                     Point origin = default;
 
-                    Typeface cachedTypeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+                    var cachedTypeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
 
                     for (var row = 0; row < MaxVisibleRows; ++row)
                     {
@@ -1080,7 +1052,7 @@
                             }
                         }
 
-                        long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
+                        var savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
 
                         if (ShowData)
                         {
@@ -1108,23 +1080,23 @@
 
                                     if (column % 2 == 0)
                                     {
-                                        evenColumnBuilder.Append(textToFormat);
-                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                        _ = evenColumnBuilder.Append(textToFormat);
+                                        _ = evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
 
-                                        oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                        _ = oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
                                     }
                                     else
                                     {
-                                        oddColumnBuilder.Append(textToFormat);
-                                        oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                        _ = oddColumnBuilder.Append(textToFormat);
+                                        _ = oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
 
-                                        evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                        _ = evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
                                     }
                                 }
                                 else
                                 {
-                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                    oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                    _ = evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                    _ = oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
                                 }
 
                                 ++column;
@@ -1141,7 +1113,7 @@
                             if (column < Columns)
                             {
                                 // We'll reuse this builder for drawing selection text
-                                evenColumnBuilder.Clear();
+                                _ = evenColumnBuilder.Clear();
 
                                 // Draw text starting from selection start point
                                 while (column < Columns)
@@ -1155,12 +1127,12 @@
 
                                         var textToFormat = ReadFormattedData();
 
-                                        evenColumnBuilder.Append(textToFormat);
-                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                        _ = evenColumnBuilder.Append(textToFormat);
+                                        _ = evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
                                     }
                                     else
                                     {
-                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                        _ = evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
                                     }
 
                                     ++column;
@@ -1173,8 +1145,8 @@
 
                                 if (column < Columns)
                                 {
-                                    evenColumnBuilder.Clear();
-                                    oddColumnBuilder.Clear();
+                                    _ = evenColumnBuilder.Clear();
+                                    _ = oddColumnBuilder.Clear();
 
                                     // Draw text after end of selection
                                     while (column < Columns)
@@ -1185,23 +1157,23 @@
 
                                             if (column % 2 == 0)
                                             {
-                                                evenColumnBuilder.Append(textToFormat);
-                                                evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                                _ = evenColumnBuilder.Append(textToFormat);
+                                                _ = evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
 
-                                                oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                                _ = oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
                                             }
                                             else
                                             {
-                                                oddColumnBuilder.Append(textToFormat);
-                                                oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                                _ = oddColumnBuilder.Append(textToFormat);
+                                                _ = oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
 
-                                                evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                                _ = evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
                                             }
                                         }
                                         else
                                         {
-                                            evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                            oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                            _ = evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                            _ = oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
                                         }
 
                                         ++column;
@@ -1246,7 +1218,7 @@
                                     }
 
                                     var textToFormat = ReadFormattedText();
-                                    builder.Append(textToFormat);
+                                    _ = builder.Append(textToFormat);
                                 }
 
                                 ++column;
@@ -1259,7 +1231,7 @@
                             {
                                 origin.X += formattedText.WidthIncludingTrailingWhitespace;
 
-                                builder.Clear();
+                                _ = builder.Clear();
 
                                 // Draw text starting from selection start point
                                 while (column < Columns)
@@ -1272,7 +1244,7 @@
                                         }
 
                                         var textToFormat = ReadFormattedText();
-                                        builder.Append(textToFormat);
+                                        _ = builder.Append(textToFormat);
                                     }
 
                                     ++column;
@@ -1285,7 +1257,7 @@
                                 {
                                     origin.X += formattedText.WidthIncludingTrailingWhitespace;
 
-                                    builder.Clear();
+                                    _ = builder.Clear();
 
                                     // Draw text after end of selection
                                     while (column < Columns)
@@ -1293,7 +1265,7 @@
                                         if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
                                         {
                                             var textToFormat = ReadFormattedText();
-                                            builder.Append(textToFormat);
+                                            _ = builder.Append(textToFormat);
                                         }
 
                                         ++column;
@@ -1321,7 +1293,7 @@
                     IsHitTestVisible = false,
                 };
 
-                canvas.Children.Add(visualHost);
+                _ = canvas.Children.Add(visualHost);
             }
         }
 
@@ -1360,25 +1332,12 @@
         {
             var hexViewer = (HexViewer)d;
 
-            if (hexViewer.MaxVisibleColumns == 0)
-            {
-                return (int)value;
-            }
-            else
-            {
-                return Math.Min((int)value, hexViewer.MaxVisibleColumns);
-            }
+            return hexViewer.MaxVisibleColumns == 0 ? (int)value : (object)Math.Min((int)value, hexViewer.MaxVisibleColumns);
         }
 
-        private static object CoerceMaxVisibleColumns(DependencyObject d, object value)
-        {
-            return Math.Min((int)value, MaxColumns);
-        }
+        private static object CoerceMaxVisibleColumns(DependencyObject d, object value) => Math.Min((int)value, MaxColumns);
 
-        private static object CoerceMaxVisibleRows(DependencyObject d, object value)
-        {
-            return Math.Min((int)value, MaxRows);
-        }
+        private static object CoerceMaxVisibleRows(DependencyObject d, object value) => Math.Min((int)value, MaxRows);
 
         private static object CoerceSelectionStart(DependencyObject d, object value)
         {
@@ -1386,7 +1345,7 @@
 
             if (hexViewer.DataSource != null)
             {
-                long selectionStart = (long)value;
+                var selectionStart = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
                 selectionStart -= selectionStart % hexViewer.BytesPerColumn;
@@ -1408,7 +1367,7 @@
 
             if (hexViewer.DataSource != null)
             {
-                long selectionEnd = (long)value;
+                var selectionEnd = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
                 selectionEnd -= selectionEnd % hexViewer.BytesPerColumn;
@@ -1442,7 +1401,7 @@
 
             if (hexViewer.DataSource != null)
             {
-                long offset = (long)value;
+                var offset = (long)value;
 
                 value = offset.Clamp(0, hexViewer.DataSource.BaseStream.Length);
             }
@@ -1456,7 +1415,7 @@
 
         private static bool ValidateDataWidth(object value)
         {
-            bool result = false;
+            var result = false;
 
             switch ((int)value)
             {
@@ -1464,10 +1423,10 @@
                 case 2:
                 case 4:
                 case 8:
-                {
-                    result = true;
-                    break;
-                }
+                    {
+                        result = true;
+                        break;
+                    }
             }
 
             return result;
@@ -1515,40 +1474,30 @@
             hexViewer.InvalidateVisual();
         }
 
-        private void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+        private void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         private string ReadFormattedText()
         {
-            StringBuilder builder = new StringBuilder(DataWidth);
+            var builder = new StringBuilder(DataWidth);
 
             switch (TextFormat)
             {
                 case TextFormat.Ascii:
-                {
-                    for (var k = 0; k < DataWidth; ++k)
                     {
-                        byte value = DataSource.ReadByte();
+                        for (var k = 0; k < DataWidth; ++k)
+                        {
+                            var value = DataSource.ReadByte();
 
-                        if (value > 31 && value < 127)
-                        {
-                            builder.Append(Convert.ToChar(value));
+                            _ = value > 31 && value < 127 ? builder.Append(Convert.ToChar(value)) : builder.Append('.');
                         }
-                        else
-                        {
-                            builder.Append('.');
-                        }
+
+                        break;
                     }
 
-                    break;
-                }
-
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(TextFormat)} value.");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(TextFormat)} value.");
+                    }
             }
 
             return builder.ToString();
@@ -1561,211 +1510,204 @@
             switch (DataType)
             {
                 case DataType.Integer:
-                {
-                    switch (DataFormat)
                     {
-                        case DataFormat.Decimal:
+                        switch (DataFormat)
                         {
-                            switch (DataSignedness)
-                            {
-                                case DataSignedness.Signed:
+                            case DataFormat.Decimal:
                                 {
-                                    switch (DataWidth)
+                                    switch (DataSignedness)
                                     {
-                                        case 1:
-                                        {
-                                            result = $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(4);
-                                            break;
-                                        }
+                                        case DataSignedness.Signed:
+                                            {
+                                                switch (DataWidth)
+                                                {
+                                                    case 1:
+                                                        {
+                                                            result = $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(4);
+                                                            break;
+                                                        }
 
-                                        case 2:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(6);
-                                            break;
-                                        }
+                                                    case 2:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(6);
+                                                            break;
+                                                        }
 
-                                        case 4:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(11);
-                                            break;
-                                        }
+                                                    case 4:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(11);
+                                                            break;
+                                                        }
 
-                                        case 8:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(21);
-                                            break;
-                                        }
+                                                    case 8:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(21);
+                                                            break;
+                                                        }
+
+                                                    default:
+                                                        {
+                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                        }
+                                                }
+
+                                                break;
+                                            }
+
+                                        case DataSignedness.Unsigned:
+                                            {
+                                                switch (DataWidth)
+                                                {
+                                                    case 1:
+                                                        {
+                                                            result = $"{DataSource.ReadByte()}".PadLeft(3);
+                                                            break;
+                                                        }
+
+                                                    case 2:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(5);
+                                                            break;
+                                                        }
+
+                                                    case 4:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(10);
+                                                            break;
+                                                        }
+
+                                                    case 8:
+                                                        {
+                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(20);
+                                                            break;
+                                                        }
+
+                                                    default:
+                                                        {
+                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                        }
+                                                }
+
+                                                break;
+                                            }
 
                                         default:
-                                        {
-                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                        }
+                                            {
+                                                throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                                            }
                                     }
 
                                     break;
                                 }
 
-                                case DataSignedness.Unsigned:
+                            case DataFormat.Hexadecimal:
                                 {
                                     switch (DataWidth)
                                     {
                                         case 1:
-                                        {
-                                            result = $"{DataSource.ReadByte()}".PadLeft(3);
-                                            break;
-                                        }
+                                            {
+                                                result = $"{DataSource.ReadByte(),0:X2}";
+                                                break;
+                                            }
 
                                         case 2:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(5);
-                                            break;
-                                        }
+                                            {
+                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness),0:X4}";
+                                                break;
+                                            }
 
                                         case 4:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(10);
-                                            break;
-                                        }
+                                            {
+                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness),0:X8}";
+                                                break;
+                                            }
 
                                         case 8:
-                                        {
-                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(20);
-                                            break;
-                                        }
+                                            {
+                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness),0:X16}";
+                                                break;
+                                            }
 
                                         default:
-                                        {
-                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                        }
+                                            {
+                                                throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                            }
                                     }
 
                                     break;
                                 }
 
-                                default:
+                            default:
                                 {
-                                    throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
                                 }
-                            }
-
-                            break;
                         }
 
-                        case DataFormat.Hexadecimal:
+                        break;
+                    }
+
+                case DataType.FloatingPoint:
+                    {
+                        switch (DataWidth)
                         {
-                            switch (DataWidth)
-                            {
-                                case 1:
+                            case 4:
                                 {
-                                    result = $"{DataSource.ReadByte(),0:X2}";
+                                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness));
+                                    var value = BitConverter.ToSingle(bytes, 0);
+                                    result = $"{value:E08}".PadLeft(16);
                                     break;
                                 }
 
-                                case 2:
+                            case 8:
                                 {
-                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness),0:X4}";
+                                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness));
+                                    var value = BitConverter.ToSingle(bytes, 0);
+                                    result = $"{value:E16}".PadLeft(24);
                                     break;
                                 }
 
-                                case 4:
-                                {
-                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness),0:X8}";
-                                    break;
-                                }
-
-                                case 8:
-                                {
-                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness),0:X16}";
-                                    break;
-                                }
-
-                                default:
+                            default:
                                 {
                                     throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
                                 }
-                            }
-
-                            break;
                         }
 
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
-                        }
+                        break;
                     }
-
-                    break;
-                }
-
-                case DataType.FloatingPoint:
-                {
-                    switch (DataWidth)
-                    {
-                        case 4:
-                        {
-                            var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness));
-                            var value = BitConverter.ToSingle(bytes, 0);
-                            result = $"{value:E08}".PadLeft(16);
-                            break;
-                        }
-
-                        case 8:
-                        {
-                            var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness));
-                            var value = BitConverter.ToSingle(bytes, 0);
-                            result = $"{value:E16}".PadLeft(24);
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                    }
-
-                    break;
-                }
 
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                    }
             }
 
             return result;
         }
 
-        private void CopyExecuted(object sender, ExecutedRoutedEventArgs e)
-        {
-            Copy();
-        }
+        private void CopyExecuted(object sender, ExecutedRoutedEventArgs e) => Copy();
 
-        private void CopyCanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = IsSelectionActive;
-        }
+        private void CopyCanExecute(object sender, CanExecuteRoutedEventArgs e) => e.CanExecute = IsSelectionActive;
 
-        //private void OnVerticalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        //{
+        // private void OnVerticalScrollBarValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        // {
         //    lastVerticalScrollValue = e.OldValue;
-        //}
+        // }
 
-        //private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
-        //{
+        // private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
+        // {
         //    long valueDelta = (long)(e.NewValue - lastVerticalScrollValue);
 
-        //    long newOffset = Offset + (valueDelta * BytesPerRow);
+        // long newOffset = Offset + (valueDelta * BytesPerRow);
 
-        //    if (newOffset < 0)
+        // if (newOffset < 0)
         //    {
         //        newOffset = 0;
         //    }
 
-        //    Offset = newOffset;
+        // Offset = newOffset;
 
-        //    InvalidateVisual();
-        //}
-
+        // InvalidateVisual();
+        // }
         private string GetFormattedAddressText(ulong address)
         {
             string formattedAddressText;
@@ -1773,39 +1715,39 @@
             switch (AddressFormat)
             {
                 case AddressFormat.Address16:
-                {
-                    formattedAddressText = $"{address & 0xFFFF,0:X4}";
-                    break;
-                }
+                    {
+                        formattedAddressText = $"{address & 0xFFFF,0:X4}";
+                        break;
+                    }
 
                 case AddressFormat.Address24:
-                {
-                    formattedAddressText = $"{(address >> 16) & 0xFF,0:X2}:{address & 0xFFFF,0:X4}";
-                    break;
-                }
+                    {
+                        formattedAddressText = $"{(address >> 16) & 0xFF,0:X2}:{address & 0xFFFF,0:X4}";
+                        break;
+                    }
 
                 case AddressFormat.Address32:
-                {
-                    formattedAddressText = $"{(address >> 16) & 0xFFFF,0:X4}:{address & 0xFFFF,0:X4}";
-                    break;
-                }
+                    {
+                        formattedAddressText = $"{(address >> 16) & 0xFFFF,0:X4}:{address & 0xFFFF,0:X4}";
+                        break;
+                    }
 
                 case AddressFormat.Address48:
-                {
-                    formattedAddressText = $"{(address >> 32) & 0xFF,0:X4}:{address & 0xFFFFFFFF,0:X8}";
-                    break;
-                }
+                    {
+                        formattedAddressText = $"{(address >> 32) & 0xFF,0:X4}:{address & 0xFFFFFFFF,0:X8}";
+                        break;
+                    }
 
                 case AddressFormat.Address64:
-                {
-                    formattedAddressText = $"{address >> 32,0:X8}:{address & 0xFFFFFFFF,0:X8}";
-                    break;
-                }
+                    {
+                        formattedAddressText = $"{address >> 32,0:X8}:{address & 0xFFFFFFFF,0:X8}";
+                        break;
+                    }
 
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
+                    }
             }
 
             return formattedAddressText;
@@ -1818,39 +1760,39 @@
             switch (AddressFormat)
             {
                 case AddressFormat.Address16:
-                {
-                    addressColumnCharWidth = 4;
-                    break;
-                }
+                    {
+                        addressColumnCharWidth = 4;
+                        break;
+                    }
 
                 case AddressFormat.Address24:
-                {
-                    addressColumnCharWidth = 7;
-                    break;
-                }
+                    {
+                        addressColumnCharWidth = 7;
+                        break;
+                    }
 
                 case AddressFormat.Address32:
-                {
-                    addressColumnCharWidth = 9;
-                    break;
-                }
+                    {
+                        addressColumnCharWidth = 9;
+                        break;
+                    }
 
                 case AddressFormat.Address48:
-                {
-                    addressColumnCharWidth = 13;
-                    break;
-                }
+                    {
+                        addressColumnCharWidth = 13;
+                        break;
+                    }
 
                 case AddressFormat.Address64:
-                {
-                    addressColumnCharWidth = 17;
-                    break;
-                }
+                    {
+                        addressColumnCharWidth = 17;
+                        break;
+                    }
 
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
+                    }
             }
 
             return addressColumnCharWidth;
@@ -1863,156 +1805,156 @@
             switch (DataType)
             {
                 case DataType.Integer:
-                {
-                    switch (DataFormat)
                     {
-                        case DataFormat.Decimal:
+                        switch (DataFormat)
                         {
-                            switch (DataSignedness)
-                            {
-                                case DataSignedness.Signed:
+                            case DataFormat.Decimal:
                                 {
-                                    switch (DataWidth)
+                                    switch (DataSignedness)
                                     {
-                                        case 1:
-                                        {
-                                            dataColumnCharWidth = 4;
-                                            break;
-                                        }
+                                        case DataSignedness.Signed:
+                                            {
+                                                switch (DataWidth)
+                                                {
+                                                    case 1:
+                                                        {
+                                                            dataColumnCharWidth = 4;
+                                                            break;
+                                                        }
 
-                                        case 2:
-                                        {
-                                            dataColumnCharWidth = 6;
-                                            break;
-                                        }
+                                                    case 2:
+                                                        {
+                                                            dataColumnCharWidth = 6;
+                                                            break;
+                                                        }
 
-                                        case 4:
-                                        {
-                                            dataColumnCharWidth = 11;
-                                            break;
-                                        }
+                                                    case 4:
+                                                        {
+                                                            dataColumnCharWidth = 11;
+                                                            break;
+                                                        }
 
-                                        case 8:
-                                        {
-                                            dataColumnCharWidth = 21;
+                                                    case 8:
+                                                        {
+                                                            dataColumnCharWidth = 21;
+                                                            break;
+                                                        }
+
+                                                    default:
+                                                        {
+                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                        }
+                                                }
+                                            }
+
                                             break;
-                                        }
+
+                                        case DataSignedness.Unsigned:
+                                            {
+                                                switch (DataWidth)
+                                                {
+                                                    case 1:
+                                                        {
+                                                            dataColumnCharWidth = 3;
+                                                            break;
+                                                        }
+
+                                                    case 2:
+                                                        {
+                                                            dataColumnCharWidth = 5;
+                                                            break;
+                                                        }
+
+                                                    case 4:
+                                                        {
+                                                            dataColumnCharWidth = 10;
+                                                            break;
+                                                        }
+
+                                                    case 8:
+                                                        {
+                                                            dataColumnCharWidth = 20;
+                                                            break;
+                                                        }
+
+                                                    default:
+                                                        {
+                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                        }
+                                                }
+                                            }
+
+                                            break;
 
                                         default:
-                                        {
-                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                        }
+                                            {
+                                                throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                                            }
                                     }
                                 }
 
                                 break;
 
-                                case DataSignedness.Unsigned:
+                            case DataFormat.Hexadecimal:
                                 {
                                     switch (DataWidth)
                                     {
                                         case 1:
-                                        {
-                                            dataColumnCharWidth = 3;
-                                            break;
-                                        }
-
                                         case 2:
-                                        {
-                                            dataColumnCharWidth = 5;
-                                            break;
-                                        }
-
                                         case 4:
-                                        {
-                                            dataColumnCharWidth = 10;
-                                            break;
-                                        }
-
                                         case 8:
-                                        {
-                                            dataColumnCharWidth = 20;
-                                            break;
-                                        }
+                                            {
+                                                dataColumnCharWidth = 2 * DataWidth;
+                                                break;
+                                            }
 
                                         default:
-                                        {
-                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                        }
+                                            {
+                                                throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                            }
                                     }
-                                }
 
-                                break;
-
-                                default:
-                                {
-                                    throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                                }
-                            }
-                        }
-
-                        break;
-
-                        case DataFormat.Hexadecimal:
-                        {
-                            switch (DataWidth)
-                            {
-                                case 1:
-                                case 2:
-                                case 4:
-                                case 8:
-                                {
-                                    dataColumnCharWidth = 2 * DataWidth;
                                     break;
                                 }
 
-                                default:
+                            default:
+                                {
+                                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
+                                }
+                        }
+                    }
+
+                    break;
+
+                case DataType.FloatingPoint:
+                    {
+                        switch (DataWidth)
+                        {
+                            case 4:
+                                {
+                                    dataColumnCharWidth = 16;
+                                    break;
+                                }
+
+                            case 8:
+                                {
+                                    dataColumnCharWidth = 24;
+                                    break;
+                                }
+
+                            default:
                                 {
                                     throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
                                 }
-                            }
-
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
                         }
                     }
-                }
 
-                break;
-
-                case DataType.FloatingPoint:
-                {
-                    switch (DataWidth)
-                    {
-                        case 4:
-                        {
-                            dataColumnCharWidth = 16;
-                            break;
-                        }
-
-                        case 8:
-                        {
-                            dataColumnCharWidth = 24;
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                    }
-                }
-
-                break;
+                    break;
 
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                    }
             }
 
             return dataColumnCharWidth;
@@ -2046,7 +1988,7 @@
 
         private Point CalculateDataVerticalLinePoint0()
         {
-            Point point1 = CalculateAddressVerticalLinePoint0();
+            var point1 = CalculateAddressVerticalLinePoint0();
 
             if (ShowData)
             {
@@ -2058,7 +2000,7 @@
 
         private Point CalculateDataVerticalLinePoint1()
         {
-            Point point2 = CalculateAddressVerticalLinePoint1();
+            var point2 = CalculateAddressVerticalLinePoint1();
 
             if (ShowData)
             {
@@ -2068,14 +2010,11 @@
             return point2;
         }
 
-        private int CalculateTextColumnCharWidth()
-        {
-            return BytesPerColumn;
-        }
+        private int CalculateTextColumnCharWidth() => BytesPerColumn;
 
         private Point CalculateTextVerticalLinePoint0()
         {
-            Point point1 = CalculateDataVerticalLinePoint0();
+            var point1 = CalculateDataVerticalLinePoint0();
 
             if (ShowText)
             {
@@ -2087,7 +2026,7 @@
 
         private Point CalculateTextVerticalLinePoint1()
         {
-            Point point2 = CalculateDataVerticalLinePoint1();
+            var point2 = CalculateDataVerticalLinePoint1();
 
             if (ShowText)
             {
@@ -2113,48 +2052,48 @@
             switch (relativeTo)
             {
                 case SelectionArea.Data:
-                {
-                    lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                    rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                    {
+                        lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                        rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
 
-                    selectionBoxXPadding = SelectionBoxDataXPadding;
-                    selectionBoxYPadding = SelectionBoxDataYPadding;
-                }
+                        selectionBoxXPadding = SelectionBoxDataXPadding;
+                        selectionBoxYPadding = SelectionBoxDataYPadding;
+                    }
 
-                break;
+                    break;
 
                 case SelectionArea.Text:
-                {
-                    lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                    rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+                    {
+                        lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                        rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
 
-                    selectionBoxXPadding = SelectionBoxTextXPadding;
-                    selectionBoxYPadding = SelectionBoxTextYPadding;
-                }
+                        selectionBoxXPadding = SelectionBoxTextXPadding;
+                        selectionBoxYPadding = SelectionBoxTextYPadding;
+                    }
 
-                break;
+                    break;
 
                 default:
-                {
-                    throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
-                }
+                    {
+                        throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
+                    }
             }
 
             // Create guidelines to make sure our coordinate snap to device pixels
-            GuidelineSet guidelines = new GuidelineSet();
+            var guidelines = new GuidelineSet();
 
             drawingContext.PushGuidelineSet(guidelines);
 
-            double halfPenThickness = pen.Thickness / 2;
+            var halfPenThickness = pen.Thickness / 2;
 
-            PathGeometry geometry = new PathGeometry();
+            var geometry = new PathGeometry();
 
             point0.X -= selectionBoxXPadding;
             point1.X += selectionBoxXPadding;
             point0.Y -= selectionBoxYPadding;
             point1.Y += selectionBoxYPadding;
 
-            PathFigure figure = new PathFigure
+            var figure = new PathFigure
             {
                 StartPoint = point0,
                 IsClosed = true,
@@ -2175,12 +2114,12 @@
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
+                    var point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    var point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    var point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
+                    var point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    var point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
+                    var point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
 
                     figure.Segments.Add(new LineSegment(point0, true));
                     figure.Segments.Add(new LineSegment(point2, true));
@@ -2213,8 +2152,8 @@
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point3 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
+                    var point2 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
+                    var point3 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
 
                     figure.Segments.Add(new LineSegment(point1, true));
                     figure.Segments.Add(new LineSegment(point2, true));
@@ -2241,9 +2180,9 @@
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point0.X, point1.Y);
+                    var point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    var point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    var point4 = new Point(point0.X, point1.Y);
 
                     figure.Segments.Add(new LineSegment(point2, true));
                     figure.Segments.Add(new LineSegment(point3, true));
@@ -2254,15 +2193,15 @@
                     guidelines.GuidelinesY.Add(point0.Y + halfPenThickness);
                     guidelines.GuidelinesY.Add(point4.Y + halfPenThickness);
 
-                    PathFigure lhsFigure = new PathFigure
+                    var lhsFigure = new PathFigure
                     {
                         StartPoint = point1,
                         IsClosed = true,
                     };
 
-                    Point point5 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
+                    var point5 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
+                    var point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    var point7 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
 
                     lhsFigure.Segments.Add(new LineSegment(point5, true));
                     lhsFigure.Segments.Add(new LineSegment(point6, true));
@@ -2288,12 +2227,12 @@
                     // 5--------4                  |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
+                    var point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    var point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    var point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
+                    var point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    var point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
+                    var point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
 
                     figure.Segments.Add(new LineSegment(point0, true));
                     figure.Segments.Add(new LineSegment(point2, true));
@@ -2321,16 +2260,12 @@
             drawingContext.Pop();
         }
 
-        private void UpdateState()
-        {
-            UpdateMaxVisibleRowsAndColumns();
-           // UpdateScrollBar();
-        }
+        private void UpdateState() => UpdateMaxVisibleRowsAndColumns(); // UpdateScrollBar();
 
         private void UpdateMaxVisibleRowsAndColumns()
         {
-            int maxVisibleRows = 0;
-            int maxVisibleColumns = 0;
+            var maxVisibleRows = 0;
+            var maxVisibleColumns = 0;
 
             if ((ShowAddress || ShowData || ShowText) && canvas != null)
             {
@@ -2341,7 +2276,7 @@
 
                 if (ShowData || ShowText)
                 {
-                    int charsPerRow = (int)(canvas.ActualWidth / cachedFormattedChar.Width);
+                    var charsPerRow = (int)(canvas.ActualWidth / cachedFormattedChar.Width);
 
                     if (ShowAddress)
                     {
@@ -2353,7 +2288,7 @@
                         charsPerRow -= 3 * CharsBetweenSections;
                     }
 
-                    int charsPerColumn = 0;
+                    var charsPerColumn = 0;
 
                     if (ShowData)
                     {
@@ -2380,24 +2315,24 @@
             MaxVisibleColumns = maxVisibleColumns;
 
             // Maximum visible rows has now changed and so we must update the maximum amount we should scroll by
-            //verticalScrollBar.LargeChange = maxVisibleRows;
+            // verticalScrollBar.LargeChange = maxVisibleRows;
         }
 
-        //private void UpdateScrollBar()
-        //{
+        // private void UpdateScrollBar()
+        // {
         //    if ((ShowAddress || ShowData || ShowText) && DataSource != null && Columns > 0 && MaxVisibleRows > 0)
         //    {
         //        long q = DataSource.BaseStream.Length / BytesPerRow;
         //        long r = DataSource.BaseStream.Length % BytesPerRow;
 
-        //        // Each scroll value represents a single drawn row
+        // // Each scroll value represents a single drawn row
         //        verticalScrollBar.Maximum = (q + (r > 0 ? 1 : 0)) - MaxVisibleRows;
         //        verticalScrollBar.ViewportSize = MaxVisibleRows;
 
-        //        // Adjust the scroll value based on the current offset
+        // // Adjust the scroll value based on the current offset
         //        verticalScrollBar.Value = Offset / BytesPerRow;
 
-        //        // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
+        // // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
         //        // and the current offset is less than the number of bytes we can display per row
         //        if (verticalScrollBar.Value == 0 && Offset > 0)
         //        {
@@ -2408,119 +2343,118 @@
         //    {
         //        verticalScrollBar.Maximum = 0;
         //    }
-        //}
-
+        // }
         private long ConvertPositionToOffset(Point position)
         {
-            long offset = Offset;
+            var offset = Offset;
 
             switch (highlightBegin)
             {
                 case SelectionArea.Address:
-                {
-                    Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                    Point addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
-
-                    // Clamp the Y coordinate to within the address region
-                    position.Y = position.Y.Clamp(addressVerticalLinePoint0.Y, addressVerticalLinePoint1.Y);
-
-                    // Convert the Y coordinate to the row number
-                    position.Y /= cachedFormattedChar.Height;
-
-                    if (position.Y >= MaxVisibleRows)
                     {
-                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                        --position.Y;
+                        var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                        var addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
+
+                        // Clamp the Y coordinate to within the address region
+                        position.Y = position.Y.Clamp(addressVerticalLinePoint0.Y, addressVerticalLinePoint1.Y);
+
+                        // Convert the Y coordinate to the row number
+                        position.Y /= cachedFormattedChar.Height;
+
+                        if (position.Y >= MaxVisibleRows)
+                        {
+                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                            --position.Y;
+                        }
+
+                        offset += BytesPerRow * (long)position.Y;
                     }
 
-                    offset += BytesPerRow * (long)position.Y;
-                }
-
-                break;
+                    break;
 
                 case SelectionArea.Data:
-                {
-                    Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-
-                    Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                    Point dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
-
-                    // Clamp the X coordinate to within the data region
-                    position.X = position.X.Clamp(addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width), dataVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width));
-
-                    // Normalize with respect to the data region
-                    position.X -= addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
-
-                    // Convert the X coordinate to the column number
-                    position.X /= (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * cachedFormattedChar.Width;
-
-                    if (position.X >= Columns)
                     {
-                        // Due to floating point rounding we may end up with exactly the maximum number of columns, so adjust to compensate
-                        --position.X;
+                        var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+
+                        var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                        var dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
+
+                        // Clamp the X coordinate to within the data region
+                        position.X = position.X.Clamp(addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width), dataVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width));
+
+                        // Normalize with respect to the data region
+                        position.X -= addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+
+                        // Convert the X coordinate to the column number
+                        position.X /= (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * cachedFormattedChar.Width;
+
+                        if (position.X >= Columns)
+                        {
+                            // Due to floating point rounding we may end up with exactly the maximum number of columns, so adjust to compensate
+                            --position.X;
+                        }
+
+                        // Clamp the Y coordinate to within the data region
+                        position.Y = position.Y.Clamp(dataVerticalLinePoint0.Y, dataVerticalLinePoint1.Y);
+
+                        // Convert the Y coordinate to the row number
+                        position.Y /= cachedFormattedChar.Height;
+
+                        if (position.Y >= MaxVisibleRows)
+                        {
+                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                            --position.Y;
+                        }
+
+                        offset += (((long)position.Y * Columns) + (long)position.X) * BytesPerColumn;
                     }
 
-                    // Clamp the Y coordinate to within the data region
-                    position.Y = position.Y.Clamp(dataVerticalLinePoint0.Y, dataVerticalLinePoint1.Y);
-
-                    // Convert the Y coordinate to the row number
-                    position.Y /= cachedFormattedChar.Height;
-
-                    if (position.Y >= MaxVisibleRows)
-                    {
-                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                        --position.Y;
-                    }
-
-                    offset += (((long)position.Y * Columns) + (long)position.X) * BytesPerColumn;
-                }
-
-                break;
+                    break;
 
                 case SelectionArea.Text:
-                {
-                    Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-
-                    Point textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
-                    Point textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
-
-                    // Clamp the X coordinate to within the text region
-                    position.X = position.X.Clamp(dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width), textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width));
-
-                    // Normalize with respect to the text region
-                    position.X -= dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
-
-                    // Convert the X coordinate to the column number
-                    position.X /= CalculateTextColumnCharWidth() * cachedFormattedChar.Width;
-
-                    if (position.X >= Columns)
                     {
-                        // Due to floating point rounding we may end up with exactly the maximum number of columns, so
-                        // adjust to compensate
-                        --position.X;
+                        var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+
+                        var textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+                        var textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
+
+                        // Clamp the X coordinate to within the text region
+                        position.X = position.X.Clamp(dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width), textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width));
+
+                        // Normalize with respect to the text region
+                        position.X -= dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+
+                        // Convert the X coordinate to the column number
+                        position.X /= CalculateTextColumnCharWidth() * cachedFormattedChar.Width;
+
+                        if (position.X >= Columns)
+                        {
+                            // Due to floating point rounding we may end up with exactly the maximum number of columns, so
+                            // adjust to compensate
+                            --position.X;
+                        }
+
+                        // Clamp the Y coordinate to within the text region
+                        position.Y = position.Y.Clamp(textVerticalLinePoint0.Y, textVerticalLinePoint1.Y);
+
+                        // Convert the Y coordinate to the row number
+                        position.Y /= cachedFormattedChar.Height;
+
+                        if (position.Y >= MaxVisibleRows)
+                        {
+                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                            --position.Y;
+                        }
+
+                        offset += (((long)position.Y * Columns) + (long)position.X) * BytesPerColumn;
                     }
 
-                    // Clamp the Y coordinate to within the text region
-                    position.Y = position.Y.Clamp(textVerticalLinePoint0.Y, textVerticalLinePoint1.Y);
-
-                    // Convert the Y coordinate to the row number
-                    position.Y /= cachedFormattedChar.Height;
-
-                    if (position.Y >= MaxVisibleRows)
-                    {
-                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                        --position.Y;
-                    }
-
-                    offset += (((long)position.Y * Columns) + (long)position.X) * BytesPerColumn;
-                }
-
-                break;
+                    break;
 
                 default:
-                {
-                    throw new InvalidOperationException($"Invalid highlight state ${highlightState}");
-                }
+                    {
+                        throw new InvalidOperationException($"Invalid highlight state ${highlightState}");
+                    }
             }
 
             return offset;
@@ -2533,61 +2467,61 @@
             switch (relativeTo)
             {
                 case SelectionArea.Data:
-                {
-                    Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-
-                    position.X = addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
-                    position.Y = addressVerticalLinePoint0.Y;
-
-                    // Normalize requested offset to a zero based column
-                    long normalizedColumn = (offset - Offset) / BytesPerColumn;
-
-                    position.X += (((normalizedColumn % Columns) + Columns) % Columns) * (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * cachedFormattedChar.Width;
-
-                    if (normalizedColumn < 0)
                     {
-                        // Negative normalized offset means the Y position is above the current offset. Because division
-                        // rounds toward zero we need to compensate here.
-                        position.Y += (((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height;
-                    }
-                    else
-                    {
-                        position.Y += normalizedColumn / Columns * cachedFormattedChar.Height;
-                    }
-                }
+                        var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
 
-                break;
+                        position.X = addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+                        position.Y = addressVerticalLinePoint0.Y;
+
+                        // Normalize requested offset to a zero based column
+                        var normalizedColumn = (offset - Offset) / BytesPerColumn;
+
+                        position.X += (((normalizedColumn % Columns) + Columns) % Columns) * (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * cachedFormattedChar.Width;
+
+                        if (normalizedColumn < 0)
+                        {
+                            // Negative normalized offset means the Y position is above the current offset. Because division
+                            // rounds toward zero we need to compensate here.
+                            position.Y += (((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height;
+                        }
+                        else
+                        {
+                            position.Y += normalizedColumn / Columns * cachedFormattedChar.Height;
+                        }
+                    }
+
+                    break;
 
                 case SelectionArea.Text:
-                {
-                    Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-
-                    position.X = dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
-                    position.Y = dataVerticalLinePoint0.Y;
-
-                    // Normalize requested offset to a zero based column
-                    long normalizedColumn = (offset - Offset) / BytesPerColumn;
-
-                    position.X += (((normalizedColumn % Columns) + Columns) % Columns) * CalculateTextColumnCharWidth() * cachedFormattedChar.Width;
-
-                    if (normalizedColumn < 0)
                     {
-                        // Negative normalized offset means the Y position is above the current offset. Because division
-                        // rounds toward zero we need to compensate here.
-                        position.Y += (((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height;
-                    }
-                    else
-                    {
-                        position.Y += normalizedColumn / Columns * cachedFormattedChar.Height;
-                    }
-                }
+                        var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
 
-                break;
+                        position.X = dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+                        position.Y = dataVerticalLinePoint0.Y;
+
+                        // Normalize requested offset to a zero based column
+                        var normalizedColumn = (offset - Offset) / BytesPerColumn;
+
+                        position.X += (((normalizedColumn % Columns) + Columns) % Columns) * CalculateTextColumnCharWidth() * cachedFormattedChar.Width;
+
+                        if (normalizedColumn < 0)
+                        {
+                            // Negative normalized offset means the Y position is above the current offset. Because division
+                            // rounds toward zero we need to compensate here.
+                            position.Y += (((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height;
+                        }
+                        else
+                        {
+                            position.Y += normalizedColumn / Columns * cachedFormattedChar.Height;
+                        }
+                    }
+
+                    break;
 
                 default:
-                {
-                    throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
-                }
+                    {
+                        throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
+                    }
             }
 
             return position;
@@ -2611,10 +2545,7 @@
             protected override int VisualChildrenCount => Visual == null ? 0 : 1;
 
             /// <inheritdoc/>
-            protected override Visual GetVisualChild(int index)
-            {
-                return Visual;
-            }
+            protected override Visual GetVisualChild(int index) => Visual;
         }
     }
 }
