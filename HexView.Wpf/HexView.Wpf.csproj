@@ -29,7 +29,7 @@ https://github.com/fjeremic/HexView.Wpf/releases</PackageReleaseNotes>
 
   <ItemGroup>
     <PackageReference Include="BinaryTools.Elf" Version="0.3.0" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
