@@ -84,6 +84,13 @@
                 new FrameworkPropertyMetadata(OnDataSourceChanged));
 
         /// <summary>
+        /// Defines the data source which is used to read the data to display within this control.
+        /// </summary>
+        public static readonly DependencyProperty ArrayDataSourceProperty =
+            DependencyProperty.Register(nameof(ArrayDataSource), typeof(Array), typeof(HexViewer),
+                new FrameworkPropertyMetadata(OnArrayDataSourceChanged));
+
+        /// <summary>
         /// Defines the type of the data to display.
         /// </summary>
         public static readonly DependencyProperty DataTypeProperty =
@@ -314,6 +321,13 @@
             get => (BinaryReader)GetValue(DataSourceProperty);
 
             set => SetValue(DataSourceProperty, value);
+        }
+
+        public Array ArrayDataSource
+        {
+            get => (Array)GetValue(ArrayDataSourceProperty);
+
+            set => SetValue(ArrayDataSourceProperty, value);
         }
 
         /// <summary>
@@ -1463,6 +1477,19 @@
 
             hexViewer.InvalidateVisual();
         }
+
+        private static void OnArrayDataSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue == null)
+            {
+((HexViewer)d).DataSource = null;
+                return;
+            }
+                
+
+           ((HexViewer)d).DataSource = new BinaryReader(new MemoryStream((byte[])e.NewValue));
+        }
+
 
         private static void OnDataWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
