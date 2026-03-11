@@ -2,3 +2,4 @@
 **/.vs/**
 **/bin/
 **/obj/
+/HexView.Wpf/Build/version.marker
